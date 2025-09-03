@@ -1,6 +1,6 @@
 from google import genai
 from google.genai import types
-import streamlit as st
+from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 import os
 
@@ -12,6 +12,15 @@ chat = client.chats.create(model="gemini-2.5-flash", config=types.GenerateConten
         temperature=0.9
     ))
 
+
+app = Flask(__name__)
+
+@app.route('/api/generate', methods=['POST'])
+def home():
+    data = request.json
+    user_prompt = data.get("input", "")
+    response = chat.send_message(user_prompt)
+    return jsonify({"response": f"{response.text}"}), 200
 # response = chat.send_message_stream("I have 2 dogs in my house.")
 # # for chunk in response:
 # #     print(chunk.text, end="")
@@ -26,40 +35,5 @@ chat = client.chats.create(model="gemini-2.5-flash", config=types.GenerateConten
 #     print(message.parts[0].text)
 
 
-st.title("LLM App")
-# api_key = st.text_input("Enter your Gemini API Key", type="password")
-# Initialize chat history in session state if it doesn't exist
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-
-# Text area for user input
-with st.form(key='my_form', clear_on_submit=True):
-    user_prompt = st.text_area("Ask something", key="user_input")
-    submit_button = st.form_submit_button("Generate")
-
-# Create a unique key for the button to ensure it reruns on each click
-if submit_button:
-    if user_prompt:
-        try:
-            # Send message to model
-            response = chat.send_message_stream(user_prompt)
-            
-            # Add the exchange to chat history
-            st.session_state.chat_history.append(("You", user_prompt))
-            for chunk in response:
-                st.session_state.chat_history.append(("Model", chunk.text))
-                st.write(f"**Model:** {chunk.text}")
-            # Set a flag to trigger clearing on next rerun
-            # Force a rerun to clear the input
-            st.rerun()
-        except Exception as e:
-            st.error(f"Error: {str(e)}")
-    else:
-        st.error("Please enter a prompt.")
-
-
-
-# Display chat history
-st.subheader("Chat History")
-for role, text in st.session_state.chat_history:
-    st.write(f"**{role}:** {text}")
+if __name__ == '__main__':
+    app.run()
