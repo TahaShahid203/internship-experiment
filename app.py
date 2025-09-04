@@ -1,6 +1,7 @@
 from google import genai
 from google.genai import types
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 
@@ -14,6 +15,7 @@ chat = client.chats.create(model="gemini-2.5-flash", config=types.GenerateConten
 
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/api/generate', methods=['POST'])
 def home():
