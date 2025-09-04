@@ -15,7 +15,10 @@ chat = client.chats.create(model="gemini-2.5-flash", config=types.GenerateConten
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": [
+    "http://localhost:3000",
+    "https://your-frontend.vercel.app"
+]}})
 
 @app.route('/api/generate', methods=['POST'])
 def home():
